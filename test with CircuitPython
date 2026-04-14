@@ -4,11 +4,13 @@ import analogio
 import usb_hid
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.keycode import Keycode
+from adafruit_hid.mouse import Mouse
 import time
 
 # Setup
 flex_sensor_pointer = analogio.AnalogIn(board.GP26)
 kbd = Keyboard(usb_hid.devices)
+mouse = Mouse(usb_hid.devices)
 
 # Calibration
 cal_vals = []
@@ -19,23 +21,24 @@ for cal in range(100):
     print("cal:", cal)
     time.sleep(0.05)
 
-cal_min = min(cal_vals)
 cal_max = max(cal_vals)
-print("min:", cal_min, "max:", cal_max)
+print("max:", cal_max)
 time.sleep(5)
+
+
+
+
 
 # Main loop
 while True:
     analog_reading = int(flex_sensor_pointer.value / 200)
     print("Flex sensor reading = ", analog_reading)
 
-    if analog_reading < cal_min:
-        print("flexed backward")
-        kbd.send(Keycode.CONTROL, Keycode.MINUS)   # Zoom out
-    elif analog_reading > cal_max:
-        print("flexed forward")
-        kbd.send(Keycode.CONTROL, Keycode.EQUALS)  # Zoom in
+    if analog_reading >= 300:
+        print("click!")
+        mouse.click(Mouse.LEFT_BUTTON)
+        time.sleep(0.3)  # debounce
     else:
         print("no flex")
 
-    time.sleep(1)
+    time.sleep(0.05)
