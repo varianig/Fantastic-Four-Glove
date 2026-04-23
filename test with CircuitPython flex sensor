@@ -34,7 +34,7 @@ while True:
     analog_reading = int(flex_sensor_pointer.value / 200)
     print("Flex sensor reading = ", analog_reading)
 
-    if analog_reading >= 300:
+    if analog_reading >= 270:
         print("click!")
         mouse.click(Mouse.LEFT_BUTTON)
         time.sleep(0.3)  # debounce
