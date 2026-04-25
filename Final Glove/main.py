@@ -27,28 +27,34 @@ time.sleep(5)
 # Main Loop
 mot = set()
 action = False
+cooldown = False
 while True:
     vals = glove.readVals()
     if action == False:
         for val, i in vals.items():
-            if val in flex and i < thresh[val] + 100: 
+            if val in flex and i > thresh[val] + 100: 
                 action = True
-            if val in force and i < thresh[val] + 50: 
+            if val in force and i > thresh[val] + 50: 
                 action = True
 
     if action == True:
         for val, i in vals.items():
-            if val in flex and i < thresh[val] + 250:
-                if val not in mot:
-                    mot.add(val)
-            if val in force and i < thresh[val] + 150:
-                if val not in mot:
-                    mot.add(val)
+            if val in flex and i > thresh[val] + 250:
+                mot.add(val)
+            if val in force and i > thresh[val] + 150:
+                mot.add(val)
         if all(value < thresh[key] + 100 for key, value in vals.items()):
             glove.completeAction(mot)
             action = False
-            mot = []
-            time.sleep(0.3)
+            mot = set()
+            cooldown = True
+            cooldown_start = time.time()
+
+    if cooldown and time.time() - cooldown_start > 0.5:
+        cooldown = False
+    if cooldown:
+        time.sleep(0.05)
+        continue
         
     time.sleep(0.05)
         
