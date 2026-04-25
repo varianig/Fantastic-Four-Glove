@@ -6,7 +6,15 @@ from adafruit_hid.mouse import Mouse
 import time
 
 class Glove:
-    def __init__(self):
+    def __init__(self, FORCE_I, FORCE_M, FORCE_P, FLEX_I, FLEX_M, FLEX_P, FORCE_A):
+        self.FORCE_I = FORCE_I
+        self.FORCE_M = FORCE_M
+        self.FORCE_P = FORCE_P
+        self.FLEX_I = FLEX_I
+        self.FLEX_M = FLEX_M
+        self.FLEX_P = FLEX_P
+        self.FORCE_A = FORCE_A
+        
         self.mouse = Mouse(usb_hid.devices)
         self.kbd = Keyboard(usb_hid.devices)
         self.setting = 'default'
@@ -22,14 +30,14 @@ class Glove:
         self.motions = motions
         self.motions_cursor = motions_cursor
 
-    def readVals(self, FORCE_I, FORCE_M, FORCE_P, FLEX_I, FLEX_M, FLEX_P, FORCE_A):
-        self.FORCE_INDEX = int(FORCE_I.value / 200)
-        self.FORCE_MIDDLE = int(FORCE_M.value / 200)
-        self.FORCE_THUMB = int(FORCE_P.value / 200)
-        self.FLEX_INDEX = int(FLEX_I.value / 200)
-        self.FLEX_MIDDLE = int(FLEX_M.value / 200)
-        self.FLEX_THUMB = int(FLEX_P.value / 200)
-        self.FORCE_RING = int(FORCE_A.value / 200)
+    def readVals(self):
+        self.FORCE_INDEX = int(self.FORCE_I.value / 200)
+        self.FORCE_MIDDLE = int(self.FORCE_M.value / 200)
+        self.FORCE_THUMB = int(self.FORCE_P.value / 200)
+        self.FLEX_INDEX = int(self.FLEX_I.value / 200)
+        self.FLEX_MIDDLE = int(self.FLEX_M.value / 200)
+        self.FLEX_THUMB = int(self.FLEX_P.value / 200)
+        self.FORCE_RING = int(self.FORCE_A.value / 200)
 
         vals = {
             "FORCE_INDEX": self.FORCE_INDEX, 
@@ -43,7 +51,13 @@ class Glove:
         return vals
 
     def calibrate(self):
-        force_i_cal = force_m_cal = force_p_cal = flex_i_cal = flex_m_cal = flex_p_cal = force_a_cal = []
+        force_i_cal = []
+        force_m_cal = []
+        force_p_cal = []
+        flex_i_cal = []
+        flex_m_cal = []
+        flex_p_cal = []
+        force_a_cal = []
 
         for i in range(100):
             self.readVals()
@@ -77,59 +91,57 @@ class Glove:
         return thresh
 
     def completeAction(self, mot):
-        mot.sort()
-        for m, i in self.motions.items():
-            if i == mot:
+        motion_set = self.motions if self.setting == "default" else self.motions_cursor
+        for m, i in motion_set.items():
+            if set(i) == mot:
                 action = m
-        
-        if self.setting == "default":
-            if action == 'left click':
-                self.leftClick()
-            if action == 'right click':
-                self.rightClick()
-            if action == 'tab':
-                self.tab()
-            if action == 'shift + tab':
-                self.shiftTab()
-            if action == 'enter':
-                self.enter()
-            if action == 'esc':
-                self.esc()
-            if action == 'pg dwn':
-                self.pgDwn()
-            if action == 'pg up':
-                self.pgUp()
-            if action == 'left arrow':
-                self.leftArrow()
-            if action == 'right arrow':
-                self.rightArrow()
+                break
+        if action is None:
+            return
+                
+        if action == 'left click':
+            self.leftClick()
+        if action == 'right click':
+            self.rightClick()
+        if action == 'tab':
+            self.tab()
+        if action == 'shift + tab':
+            self.shiftTab()
+        if action == 'enter':
+            self.enter()
+        if action == 'esc':
+            self.esc()
+        if action == 'pg dwn':
+            self.pgDwn()
+        if action == 'pg up':
+            self.pgUp()
+        if action == 'left arrow':
+            self.leftArrow()
+        if action == 'right arrow':
+            self.rightArrow()
 
-            if action == 'toggle cursor':
-                self.toggleCursor()
-            if action == 'toggle keyboard':
-                self.toggleKeyboard()
+        if action == 'toggle cursor':
+            self.toggleCursor()
+        if action == 'toggle keyboard':
+            self.toggleKeyboard()
 
-        if self.setting == "cursor":
-            if action == 'mouse yneg':
-                self.yNeg()
-            if action == 'mouse ypos':
-                self.yPos()
-            if action == 'mouse xneg':
-                self.xNeg()
-            if action == 'mouse xpos':
-                self.xPos()
+        if action == 'mouse yneg':
+            self.yNeg()
+        if action == 'mouse ypos':
+            self.yPos()
+        if action == 'mouse xneg':
+            self.xNeg()
+        if action == 'mouse xpos':
+            self.xPos()
 
-            if action == 'mouse xneg yneg':
-                self.xNeg_yNeg()
-            if action == 'mouse xneg ypos':
-                self.xNeg_yPos()
-            if action == 'mouse xpos yneg':
-                self.xPos_yNeg()
-            if action == 'mouse xpos ypos':
-                self.xPos_yPos()
-
-            if action == 'toggle cursor':
-                self.toggleCursor()
+        if action == 'mouse xneg yneg':
+            self.xNeg_yNeg()
+        if action == 'mouse xneg ypos':
+            self.xNeg_yPos()
+        if action == 'mouse xpos yneg':
+            self.xPos_yNeg()
+        if action == 'mouse xpos ypos':
+            self.xPos_yPos()
 
     def leftClick(self):
         self.mouse.click(Mouse.LEFT_BUTTON)
@@ -160,10 +172,12 @@ class Glove:
         time.sleep(0.3)  # debounce
 
     def toggleCursor(self):
-        self.setting = 'cursor'
-        time.sleep(0.3)  # debounce
+        if self.setting == "default":
+            self.setting = "cursor"
+        else:
+            self.setting = "default"
     def toggleKeyboard(self):
-        self.kbd.send(Keycode.WINDOWS, Keycode.COMMAND, Keycode.O)
+        self.kbd.send(Keycode.CONTROL, Keycode.WINDOWS, Keycode.O)
         time.sleep(0.3)  # debounce
 
 
@@ -174,7 +188,7 @@ class Glove:
         self.mouse.move(0, 100, 0)
         time.sleep(0.3)  # debounce
     def xNeg(self):
-        self.mouse.move(100, 0, 0)
+        self.mouse.move(-100, 0, 0)
         time.sleep(0.3)  # debounce
     def xPos(self):
         self.mouse.move(100, 0, 0)
