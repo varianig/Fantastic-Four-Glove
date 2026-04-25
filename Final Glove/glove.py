@@ -96,7 +96,7 @@ class Glove:
             if set(i) == mot:
                 action = m
                 break
-        if action is None:
+        if action == False:
             return
                 
         if action == 'left click':
