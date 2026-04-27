@@ -49,6 +49,9 @@ class Glove:
             "FORCE_RING":   self.FORCE_RING
         }
         return vals
+    
+    def getSetting(self):
+        return self.setting
 
     def calibrate(self):
         flex_i_cal = []
@@ -75,6 +78,7 @@ class Glove:
     
     def completeAction(self, mot):
         motion_set = self.motions if self.setting == "default" else self.motions_cursor
+        action = False
         for m, i in motion_set.items():
             if set(i) == mot:
                 action = m
@@ -135,6 +139,9 @@ class Glove:
     def tab(self):
         self.kbd.send(Keycode.TAB)
         time.sleep(0.3)  # debounce
+    def shiftTab(self):
+        self.kbd.send(Keycode.SHIFT, Keycode.TAB)
+        time.sleep(0.3)  # debounce
     def enter(self):
         self.kbd.send(Keycode.ENTER)
         time.sleep(0.3)  # debounce
@@ -165,28 +172,20 @@ class Glove:
 
 
     def yNeg(self):
-        self.mouse.move(0, -100, 0)
-        time.sleep(0.3)  # debounce
+        self.mouse.move(0, -10, 0)
     def yPos(self):
-        self.mouse.move(0, 100, 0)
-        time.sleep(0.3)  # debounce
+        self.mouse.move(0, 10, 0)
     def xNeg(self):
-        self.mouse.move(-100, 0, 0)
-        time.sleep(0.3)  # debounce
+        self.mouse.move(-10, 0, 0)
     def xPos(self):
-        self.mouse.move(100, 0, 0)
-        time.sleep(0.3)  # debounce
+        self.mouse.move(10, 0, 0)
 
     def xNeg_yNeg(self):
-        self.mouse.move(-100, -100, 0)
-        time.sleep(0.3)  # debounce
+        self.mouse.move(-10, -10, 0)
     def xNeg_yPos(self):
-        self.mouse.move(-100, 100, 0)
-        time.sleep(0.3)  # debounce
+        self.mouse.move(-10, 10, 0)
     def xPos_yNeg(self):
-        self.mouse.move(100, -100, 0)
-        time.sleep(0.3)  # debounce
+        self.mouse.move(10, -10, 0)
     def xPos_yPos(self):
-        self.mouse.move(100, 100, 0)
-        time.sleep(0.3)  # debounce
+        self.mouse.move(10, 10, 0)
         
