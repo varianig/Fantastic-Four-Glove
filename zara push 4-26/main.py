@@ -37,14 +37,20 @@ print("Calibration Complete.\nData:")
 print("foI", thresh["FORCE_INDEX"], "\nfoM", thresh["FORCE_MIDDLE"], "\nfoP", thresh["FORCE_THUMB"],
        "\nflI", thresh["FLEX_INDEX"], "\nflM", thresh["FLEX_MIDDLE"], "\nflP", thresh["FLEX_THUMB"], 
        "\nfoA", thresh["FORCE_RING"])
-time.sleep(5)
+time.sleep(1)
 
 # Main Loop
+print("Main Loop")
 mot = set()
 action = False
 cooldown = False
 while True:
     vals = glove.readVals()
+    
+    for val, i in vals.items():
+        if val == 'FLEX_INDEX':
+            print(i)
+    
     if action == False:
         for val, i in vals.items():
             if val in flex and i > thresh[val] + 100: 
@@ -53,17 +59,31 @@ while True:
                 action = True
 
     if action == True:
-        for val, i in vals.items():
-            if val in flex and i > thresh[val] + 250:
-                mot.add(val)
-            if val in force and i > thresh[val] + 150:
-                mot.add(val)
-        if all(value < thresh[key] + 100 for key, value in vals.items()):
-            glove.completeAction(mot)
-            action = False
-            mot = set()
-            cooldown = True
-            cooldown_start = time.time()
+        if glove.getSetting() == 'default':
+            for val, i in vals.items():
+                if val in flex and i > thresh[val] + 250:
+                    mot.add(val)
+                if val in force and i != 0:
+                    mot.add(val)
+            if all(value < thresh[key] + 100 for key, value in vals.items()):
+                glove.completeAction(mot)
+                action = False
+                mot = set()
+                cooldown = True
+                cooldown_start = time.time()
+        else:
+            for val, i in vals.items():
+                if val in flex and i > thresh[val] + 250:
+                    mot.add(val)
+                if val in force and i != 0:
+                    mot.add(val)
+                
+                glove.completeAction(mot)
+                action = False
+                mot = set()
+                cooldown = True
+                cooldown_start = time.time()
+            
 
     if cooldown and time.time() - cooldown_start > 0.5:
         cooldown = False
@@ -72,4 +92,4 @@ while True:
         continue
         
     time.sleep(0.05)
-        
+                                                
