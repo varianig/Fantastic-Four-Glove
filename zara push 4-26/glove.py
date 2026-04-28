@@ -55,6 +55,7 @@ class Glove:
             "FLEX_THUMB":   self.FLEX_THUMB,
             "FORCE_RING":   self.FORCE_RING
         }
+            
         return vals
     
     def getSetting(self):
@@ -62,6 +63,11 @@ class Glove:
     def getActiveKeys(self):
         return self.active_keys
 
+
+    def percentile(self, arr, p):
+        arr = sorted(arr)
+        k = int(len(arr) * p)
+        return arr[k]
     def calibrate(self):
         flex_i_cal = []
         flex_m_cal = []
@@ -75,14 +81,17 @@ class Glove:
             time.sleep(0.05)
 
         thresh = {
-            "FORCE_INDEX":  0,
+            "FORCE_INDEX": 0,
             "FORCE_MIDDLE": 0,
-            "FORCE_THUMB":  0,
-            "FORCE_RING":   0,
-            "FLEX_INDEX":   max(flex_i_cal) + 10,
-            "FLEX_MIDDLE":  max(flex_m_cal) + 10,
-            "FLEX_THUMB":   max(flex_p_cal) + 10,
+            "FORCE_THUMB": 0,
+            "FORCE_RING": 0,
+
+            # 90th percentile baseline + margin
+            "FLEX_INDEX":  self.percentile(flex_i_cal, 0.9) + 10,
+            "FLEX_MIDDLE": self.percentile(flex_m_cal, 0.9) + 10,
+            "FLEX_THUMB":  self.percentile(flex_p_cal, 0.9) + 10,
         }
+
         return thresh
     
     def completeAction(self, mot):
@@ -108,8 +117,6 @@ class Glove:
         if action == 'esc':
             self.esc()
 
-        if action == 'toggle cursor':
-            self.toggleCursor()
         if action == 'toggle keyboard':
             self.toggleKeyboard()
 
@@ -160,42 +167,46 @@ class Glove:
             del self.active_keys[key]
 
     def handleContinuous(self, current_mot):
-        print(self.active_keys)
+        # print(self.active_keys)
+        if self.getSetting() == 'default':
 
-        # --- COMBOS FIRST (based on CURRENT STATE, not pressed) ---
-        if "FLEX_THUMB" in current_mot: # always allow directional mode first
-            if "FLEX_INDEX" in current_mot:
-                self.keyDown(Keycode.RIGHT_ARROW)
-                self.keyUp(Keycode.DOWN_ARROW)
-                self.keyUp(Keycode.UP_ARROW)
+            # --- COMBOS FIRST (based on CURRENT STATE, not pressed) ---
+            if "FLEX_THUMB" in current_mot: # always allow directional mode first
+                if "FLEX_INDEX" in current_mot:
+                    self.keyDown(Keycode.RIGHT_ARROW)
+                    self.keyUp(Keycode.DOWN_ARROW)
+                    self.keyUp(Keycode.UP_ARROW)
+
+                elif "FLEX_MIDDLE" in current_mot:
+                    self.keyDown(Keycode.LEFT_ARROW)
+                    self.keyUp(Keycode.DOWN_ARROW)
+                    self.keyUp(Keycode.UP_ARROW)
+
+            # --- SINGLE INPUTS ---
+            elif "FLEX_INDEX" in current_mot:
+                self.keyDown(Keycode.DOWN_ARROW)
+                self.keyUp(Keycode.RIGHT_ARROW)
 
             elif "FLEX_MIDDLE" in current_mot:
-                self.keyDown(Keycode.LEFT_ARROW)
-                self.keyUp(Keycode.DOWN_ARROW)
+                self.keyDown(Keycode.UP_ARROW)
+                self.keyUp(Keycode.LEFT_ARROW)
+
+            else:
+                # nothing active → release everything
+                self.keyUp(Keycode.LEFT_ARROW)
+                self.keyUp(Keycode.RIGHT_ARROW)
                 self.keyUp(Keycode.UP_ARROW)
-
-        # --- SINGLE INPUTS ---
-        elif "FLEX_INDEX" in current_mot:
-            self.keyDown(Keycode.DOWN_ARROW)
-            self.keyUp(Keycode.RIGHT_ARROW)
-
-        elif "FLEX_MIDDLE" in current_mot:
-            self.keyDown(Keycode.UP_ARROW)
-            self.keyUp(Keycode.LEFT_ARROW)
-
+                self.keyUp(Keycode.DOWN_ARROW)
         else:
-            # nothing active → release everything
-            self.keyUp(Keycode.LEFT_ARROW)
-            self.keyUp(Keycode.RIGHT_ARROW)
-            self.keyUp(Keycode.UP_ARROW)
-            self.keyUp(Keycode.DOWN_ARROW)
+            return
             
 
     def toggleCursor(self):
-        if self.setting == "default":
-            self.setting = "cursor"
-        else:
+        if self.setting == "cursor":
             self.setting = "default"
+        elif self.setting == "default":
+            self.setting = "cursor"
+        print(self.setting)
     def toggleKeyboard(self):
         self.kbd.send(Keycode.CONTROL, Keycode.WINDOWS, Keycode.O)
         time.sleep(0.3)  # debounce
