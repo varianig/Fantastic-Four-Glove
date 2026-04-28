@@ -29,15 +29,22 @@ class Glove:
 
         self.motions = motions
         self.motions_cursor = motions_cursor
+
+        self.active_keys = {}
+        self.last_repeat = {}
+        self.repeat_delay = 40  # adjust feel
+
+
     def readVals(self):
+
         self.FORCE_INDEX  = 300 if self.FORCE_I.value else 0
         self.FORCE_MIDDLE = 300 if self.FORCE_M.value else 0
         self.FORCE_THUMB  = 300 if self.FORCE_P.value else 0
         self.FORCE_RING   = 300 if self.FORCE_A.value else 0
 
-        self.FLEX_INDEX  = int(self.FLEX_I.value / 200)
-        self.FLEX_MIDDLE = int(self.FLEX_M.value / 200)
-        self.FLEX_THUMB  = int(self.FLEX_P.value / 200)
+        self.FLEX_INDEX  = int(self.FLEX_I.value / 100)
+        self.FLEX_MIDDLE = int(self.FLEX_M.value / 100)
+        self.FLEX_THUMB  = int(self.FLEX_P.value / 100)
 
         vals = {
             "FORCE_INDEX":  self.FORCE_INDEX,
@@ -52,6 +59,8 @@ class Glove:
     
     def getSetting(self):
         return self.setting
+    def getActiveKeys(self):
+        return self.active_keys
 
     def calibrate(self):
         flex_i_cal = []
@@ -98,14 +107,6 @@ class Glove:
             self.enter()
         if action == 'esc':
             self.esc()
-        if action == 'pg dwn':
-            self.pgDwn()
-        if action == 'pg up':
-            self.pgUp()
-        if action == 'left arrow':
-            self.leftArrow()
-        if action == 'right arrow':
-            self.rightArrow()
 
         if action == 'toggle cursor':
             self.toggleCursor()
@@ -148,18 +149,47 @@ class Glove:
     def esc(self):
         self.kbd.send(Keycode.ESCAPE)
         time.sleep(0.3)  # debounce
-    def pgDwn(self):
-        self.kbd.send(Keycode.DOWN_ARROW)
-        time.sleep(0.3)  # debounce
-    def pgUp(self):
-        self.kbd.send(Keycode.UP_ARROW)
-        time.sleep(0.3)  # debounce
-    def leftArrow(self):
-        self.kbd.send(Keycode.LEFT_ARROW)
-        time.sleep(0.3)  # debounce
-    def rightArrow(self):
-        self.kbd.send(Keycode.RIGHT_ARROW)
-        time.sleep(0.3)  # debounce
+
+    def keyDown(self, key):
+        if key not in self.active_keys:
+            self.active_keys[key] = True
+            self.kbd.press(key)   # ← HOLD key down
+    def keyUp(self, key):
+        if key in self.active_keys:
+            self.kbd.release(key)  # ← RELEASE key
+            del self.active_keys[key]
+
+    def handleContinuous(self, current_mot):
+        print(self.active_keys)
+
+        # --- COMBOS FIRST (based on CURRENT STATE, not pressed) ---
+        if "FLEX_THUMB" in current_mot: # always allow directional mode first
+            if "FLEX_INDEX" in current_mot:
+                self.keyDown(Keycode.RIGHT_ARROW)
+                self.keyUp(Keycode.DOWN_ARROW)
+                self.keyUp(Keycode.UP_ARROW)
+
+            elif "FLEX_MIDDLE" in current_mot:
+                self.keyDown(Keycode.LEFT_ARROW)
+                self.keyUp(Keycode.DOWN_ARROW)
+                self.keyUp(Keycode.UP_ARROW)
+
+        # --- SINGLE INPUTS ---
+        elif "FLEX_INDEX" in current_mot:
+            self.keyDown(Keycode.DOWN_ARROW)
+            self.keyUp(Keycode.RIGHT_ARROW)
+
+        elif "FLEX_MIDDLE" in current_mot:
+            self.keyDown(Keycode.UP_ARROW)
+            self.keyUp(Keycode.LEFT_ARROW)
+
+        else:
+            # nothing active → release everything
+            self.keyUp(Keycode.LEFT_ARROW)
+            self.keyUp(Keycode.RIGHT_ARROW)
+            self.keyUp(Keycode.UP_ARROW)
+            self.keyUp(Keycode.DOWN_ARROW)
+            
 
     def toggleCursor(self):
         if self.setting == "default":
@@ -188,4 +218,4 @@ class Glove:
         self.mouse.move(10, -10, 0)
     def xPos_yPos(self):
         self.mouse.move(10, 10, 0)
-        
+
