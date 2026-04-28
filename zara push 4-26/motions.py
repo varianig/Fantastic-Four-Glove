@@ -1,5 +1,11 @@
 # "FLEX_INDEX", "FLEX_MIDDLE"
- 
+
+# "pg dwn": ["FLEX_INDEX"],
+# "pg up": ["FLEX_MIDDLE"],
+# "left arrow": ["FLEX_INDEX", "FLEX_THUMB"],
+# "right arrow": ["FLEX_MIDDLE", "FLEX_THUMB"],
+
+
 motions = {
     "left click": ["FORCE_THUMB"],
     "right click": ["FLEX_THUMB"],
@@ -7,10 +13,6 @@ motions = {
     "shift + tab": ["FORCE_MIDDLE"],
     "enter": ["FORCE_MIDDLE", "FORCE_THUMB"],
     "esc": ["FORCE_INDEX", "FORCE_THUMB"],
-    "pg dwn": ["FLEX_INDEX"],
-    "pg up": ["FLEX_MIDDLE"],
-    "left arrow": ["FLEX_INDEX", "FLEX_THUMB"],
-    "right arrow": ["FLEX_MIDDLE", "FLEX_THUMB"],
 
     "toggle cursor": ["FORCE_RING"],
     "toggle keyboard": ["FORCE_INDEX", "FORCE_MIDDLE"] # WIN + CMD + O on windows
@@ -33,3 +35,4 @@ motions_cursor = {
     "toggle cursor": ["FORCE_RING"],
     "toggle keyboard": ["FORCE_INDEX", "FORCE_MIDDLE"] # WIN + CMD + O on windows
 }
+
