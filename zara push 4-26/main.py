@@ -40,6 +40,14 @@ print("foI", thresh["FORCE_INDEX"], "\nfoM", thresh["FORCE_MIDDLE"], "\nfoP", th
 time.sleep(1)
 
 # Main Loop
+def normalize(val, base, max_val=600):
+    # scale 0.0-1.0
+    delta = val - base
+    return max(0, min(1, delta / (max_val - base)))
+
+
+
+
 print("Main Loop")
 threshold = 1.5
 prev_mot = set()
@@ -48,33 +56,40 @@ action = False
 cooldown = False
 while True:
     vals = glove.readVals()
-    
+    vals_norm = {}
+    for val, i in vals.items():
+        vals_norm[val] = normalize(i, thresh[val], 650)
+        
     line = (
-        f"FLEX | I:{vals['FLEX_INDEX']:4} M:{vals['FLEX_MIDDLE']:4} T:{vals['FLEX_THUMB']:4}   "
-        f"FORCE | I:{vals['FORCE_INDEX']:3} M:{vals['FORCE_MIDDLE']:3} T:{vals['FORCE_THUMB']:3} R:{vals['FORCE_RING']:3}"
-    )
-    print(line, end="\r")
+        f"FLEX | I:{vals['FLEX_INDEX']}, {vals_norm['FLEX_INDEX']:4} M:{vals['FLEX_MIDDLE']}, {vals_norm['FLEX_MIDDLE']:4} T:{vals['FLEX_THUMB']}, {vals_norm['FLEX_THUMB']:4}   "
+        f"FORCE | I:{vals['FORCE_INDEX']}, {vals_norm['FORCE_INDEX']:3} M:{vals['FORCE_MIDDLE']}, {vals_norm['FORCE_MIDDLE']:3} T:{vals['FORCE_THUMB']}, {vals_norm['FORCE_THUMB']:3} R:{vals['FORCE_RING']}, {vals_norm['FORCE_RING']:3}"
+        )
+    #print(line, end="\r")
+    #print("\033[F\033[K")
+    #print(f"T:{vals['FORCE_THUMB']}, {vals_norm['FORCE_THUMB']}")
 
     # --- NEW: continuous input tracking ---
-    if glove.getSetting() == 'default':
-        current_mot = set()
-        print(current_mot)
+    current_mot = set()
 
-        for val, i in vals.items():
-            if val in flex and i > thresh[val] + 120:
-                current_mot.add(val)
-            if val in force and i != 0:
-                current_mot.add(val)
+    for val, i in vals.items():
+        if val in flex and vals_norm[val] > .85:
+            current_mot.add(val)
+        if val in force and i != 0:
+            current_mot.add(val)
 
-        # handle continuous keys
-        print(current_mot)
-        glove.handleContinuous(current_mot)
-
-        prev_mot = current_mot.copy()
-    """
+    # handle continuous keys
+    glove.handleContinuous(current_mot)
+    
+    pressed = current_mot - prev_mot
+    # handle toggle on PRESS only
+    if "FORCE_RING" in pressed:
+        glove.toggleCursor()
+        
+    prev_mot = current_mot.copy()
+    
     if action == False:
         for val, i in vals.items():
-            if val in flex and i > thresh[val] * 1.25: 
+            if val in flex and vals_norm[val] > .4: 
                 action = True
             if val in force and i != 0: 
                 action = True
@@ -82,7 +97,7 @@ while True:
     if action == True:
         if glove.getSetting() == 'default':
             for val, i in vals.items():
-                if val in flex and i > thresh[val] * threshold:
+                if val in flex and vals_norm[val] > .85:
                     mot.add(val)
                 if val in force and i != 0:
                     mot.add(val)
@@ -103,7 +118,7 @@ while True:
                 action = False
                 mot = set()
                 cooldown = True
-                cooldown_start = time.time()"""
+                cooldown_start = time.time()
             
 
     if cooldown and time.time() - cooldown_start > 0.5:
