@@ -4,6 +4,7 @@
 # "pg up": ["FLEX_MIDDLE"],
 # "left arrow": ["FLEX_INDEX", "FLEX_THUMB"],
 # "right arrow": ["FLEX_MIDDLE", "FLEX_THUMB"],
+# "toggle cursor": ["FORCE_RING"],
 
 
 motions = {
@@ -14,7 +15,6 @@ motions = {
     "enter": ["FORCE_MIDDLE", "FORCE_THUMB"],
     "esc": ["FORCE_INDEX", "FORCE_THUMB"],
 
-    "toggle cursor": ["FORCE_RING"],
     "toggle keyboard": ["FORCE_INDEX", "FORCE_MIDDLE"] # WIN + CMD + O on windows
 }
 
@@ -32,7 +32,6 @@ motions_cursor = {
     "mouse xpos yneg": ["FORCE_INDEX", "FLEX_MIDDLE"],
     "mouse xpos ypos": ["FLEX_INDEX", "FLEX_MIDDLE"],
 
-    "toggle cursor": ["FORCE_RING"],
     "toggle keyboard": ["FORCE_INDEX", "FORCE_MIDDLE"] # WIN + CMD + O on windows
 }
 
