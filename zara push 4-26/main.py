@@ -19,11 +19,11 @@ FORCE_THUMB.pull = digitalio.Pull.DOWN
 FORCE_RING   = digitalio.DigitalInOut(board.GP19)
 FORCE_RING.direction = digitalio.Direction.INPUT
 FORCE_RING.pull = digitalio.Pull.DOWN
-
+                            
 FLEX_INDEX  = analogio.AnalogIn(board.GP26)
 FLEX_MIDDLE = analogio.AnalogIn(board.GP27)
 FLEX_THUMB  = analogio.AnalogIn(board.GP28)
-
+            
 force = ["FORCE_INDEX", "FORCE_MIDDLE", "FORCE_THUMB", "FORCE_RING"]
 flex = ["FLEX_INDEX", "FLEX_MIDDLE", "FLEX_THUMB"]
 
@@ -41,27 +41,48 @@ time.sleep(1)
 
 # Main Loop
 print("Main Loop")
+threshold = 1.5
+prev_mot = set()
 mot = set()
 action = False
 cooldown = False
 while True:
     vals = glove.readVals()
     
-    for val, i in vals.items():
-        if val == 'FLEX_INDEX':
-            print(i)
-    
+    line = (
+        f"FLEX | I:{vals['FLEX_INDEX']:4} M:{vals['FLEX_MIDDLE']:4} T:{vals['FLEX_THUMB']:4}   "
+        f"FORCE | I:{vals['FORCE_INDEX']:3} M:{vals['FORCE_MIDDLE']:3} T:{vals['FORCE_THUMB']:3} R:{vals['FORCE_RING']:3}"
+    )
+    print(line, end="\r")
+
+    # --- NEW: continuous input tracking ---
+    if glove.getSetting() == 'default':
+        current_mot = set()
+        print(current_mot)
+
+        for val, i in vals.items():
+            if val in flex and i > thresh[val] + 120:
+                current_mot.add(val)
+            if val in force and i != 0:
+                current_mot.add(val)
+
+        # handle continuous keys
+        print(current_mot)
+        glove.handleContinuous(current_mot)
+
+        prev_mot = current_mot.copy()
+    """
     if action == False:
         for val, i in vals.items():
-            if val in flex and i > thresh[val] + 100: 
+            if val in flex and i > thresh[val] * 1.25: 
                 action = True
-            if val in force and i > thresh[val] + 50: 
+            if val in force and i != 0: 
                 action = True
 
     if action == True:
         if glove.getSetting() == 'default':
             for val, i in vals.items():
-                if val in flex and i > thresh[val] + 250:
+                if val in flex and i > thresh[val] * threshold:
                     mot.add(val)
                 if val in force and i != 0:
                     mot.add(val)
@@ -73,7 +94,7 @@ while True:
                 cooldown_start = time.time()
         else:
             for val, i in vals.items():
-                if val in flex and i > thresh[val] + 250:
+                if val in flex and i > thresh[val] * threshold:
                     mot.add(val)
                 if val in force and i != 0:
                     mot.add(val)
@@ -82,7 +103,7 @@ while True:
                 action = False
                 mot = set()
                 cooldown = True
-                cooldown_start = time.time()
+                cooldown_start = time.time()"""
             
 
     if cooldown and time.time() - cooldown_start > 0.5:
@@ -91,5 +112,5 @@ while True:
         time.sleep(0.05)
         continue
         
-    time.sleep(0.05)
-                                                
+    time.sleep(0.01)
+    
