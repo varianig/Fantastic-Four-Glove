@@ -64,15 +64,15 @@ while True:
         f"FLEX | I:{vals['FLEX_INDEX']}, {vals_norm['FLEX_INDEX']:4} M:{vals['FLEX_MIDDLE']}, {vals_norm['FLEX_MIDDLE']:4} T:{vals['FLEX_THUMB']}, {vals_norm['FLEX_THUMB']:4}   "
         f"FORCE | I:{vals['FORCE_INDEX']}, {vals_norm['FORCE_INDEX']:3} M:{vals['FORCE_MIDDLE']}, {vals_norm['FORCE_MIDDLE']:3} T:{vals['FORCE_THUMB']}, {vals_norm['FORCE_THUMB']:3} R:{vals['FORCE_RING']}, {vals_norm['FORCE_RING']:3}"
         )
-    #print(line, end="\r")
-    #print("\033[F\033[K")
+    print(line, end="\r")
+    print("\033[F\033[K")
     #print(f"T:{vals['FORCE_THUMB']}, {vals_norm['FORCE_THUMB']}")
 
     # --- NEW: continuous input tracking ---
     current_mot = set()
 
     for val, i in vals.items():
-        if val in flex and vals_norm[val] > .85:
+        if val in flex and vals_norm[val] > .75:
             current_mot.add(val)
         if val in force and i != 0:
             current_mot.add(val)
@@ -97,7 +97,7 @@ while True:
     if action == True:
         if glove.getSetting() == 'default':
             for val, i in vals.items():
-                if val in flex and vals_norm[val] > .85:
+                if val in flex and vals_norm[val] > .75:
                     mot.add(val)
                 if val in force and i != 0:
                     mot.add(val)
