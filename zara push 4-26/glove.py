@@ -79,6 +79,8 @@ class Glove:
             flex_m_cal.append(self.FLEX_MIDDLE)
             flex_p_cal.append(self.FLEX_THUMB)
             time.sleep(0.05)
+        
+            
 
         thresh = {
             "FORCE_INDEX": 0,
@@ -87,9 +89,9 @@ class Glove:
             "FORCE_RING": 0,
 
             # 90th percentile baseline + margin
-            "FLEX_INDEX":  self.percentile(flex_i_cal, 0.9) + 10,
-            "FLEX_MIDDLE": self.percentile(flex_m_cal, 0.9) + 10,
-            "FLEX_THUMB":  self.percentile(flex_p_cal, 0.9) + 10,
+            "FLEX_INDEX":  self.percentile(flex_i_cal, 0.3) - 100,
+            "FLEX_MIDDLE": self.percentile(flex_m_cal, 0.3) + 10,
+            "FLEX_THUMB":  self.percentile(flex_p_cal, 0.3) + 100,
         }
 
         return thresh
