@@ -4,25 +4,25 @@ import digitalio
 from glove import Glove
 import time
 
-FORCE_INDEX  = digitalio.DigitalInOut(board.GP16)
+FORCE_INDEX  = digitalio.DigitalInOut(board.GP16) #Red
 FORCE_INDEX.direction = digitalio.Direction.INPUT
 FORCE_INDEX.pull = digitalio.Pull.DOWN
  
-FORCE_MIDDLE = digitalio.DigitalInOut(board.GP17)
+FORCE_MIDDLE = digitalio.DigitalInOut(board.GP17) #Yellow
 FORCE_MIDDLE.direction = digitalio.Direction.INPUT
 FORCE_MIDDLE.pull = digitalio.Pull.DOWN
 
-FORCE_THUMB  = digitalio.DigitalInOut(board.GP18)
+FORCE_THUMB  = digitalio.DigitalInOut(board.GP18) #Blue
 FORCE_THUMB.direction = digitalio.Direction.INPUT
 FORCE_THUMB.pull = digitalio.Pull.DOWN
 
-FORCE_RING   = digitalio.DigitalInOut(board.GP19)
+FORCE_RING   = digitalio.DigitalInOut(board.GP19) #Purple
 FORCE_RING.direction = digitalio.Direction.INPUT
 FORCE_RING.pull = digitalio.Pull.DOWN
                             
-FLEX_INDEX  = analogio.AnalogIn(board.GP26)
-FLEX_MIDDLE = analogio.AnalogIn(board.GP27)
-FLEX_THUMB  = analogio.AnalogIn(board.GP28)
+FLEX_INDEX  = analogio.AnalogIn(board.GP26) #Brown
+FLEX_MIDDLE = analogio.AnalogIn(board.GP27) #Orange
+FLEX_THUMB  = analogio.AnalogIn(board.GP28) #Green
             
 force = ["FORCE_INDEX", "FORCE_MIDDLE", "FORCE_THUMB", "FORCE_RING"]
 flex = ["FLEX_INDEX", "FLEX_MIDDLE", "FLEX_THUMB"]
