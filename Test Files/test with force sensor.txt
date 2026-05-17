@@ -1,0 +1,40 @@
+# Team Fantastic 4
+import board
+import analogio
+import usb_hid
+from adafruit_hid.keyboard import Keyboard
+from adafruit_hid.keycode import Keycode
+from adafruit_hid.mouse import Mouse
+import time
+
+# Setup
+flex_sensor_pointer = analogio.AnalogIn(board.GP26)
+kbd = Keyboard(usb_hid.devices)
+mouse = Mouse(usb_hid.devices)
+
+# Calibration
+cal_vals = []
+for cal in range(100):
+    analog_reading = int(flex_sensor_pointer.value / 200)
+    cal_vals.append(analog_reading)
+    print("Flex sensor reading = ", analog_reading)
+    print("cal:", cal)
+    time.sleep(0.05)
+
+cal_max = max(cal_vals)
+print("max:", cal_max)
+time.sleep(5)
+
+# Main loop
+while True:
+    analog_reading = int(flex_sensor_pointer.value / 200)
+    print("Flex sensor reading = ", analog_reading)
+
+    if analog_reading >= 170:
+        print("scroll down!")
+        kbd.send(Keycode.DOWN_ARROW)
+        time.sleep(0.3)  # debounce
+    else:
+        print("no flex")
+
+    time.sleep(0.05)
